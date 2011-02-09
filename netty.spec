@@ -1,7 +1,7 @@
 
 Name:           netty
 Version:        3.2.3
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
@@ -127,6 +127,9 @@ install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 
 
 %changelog
+* Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.3-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
 * Mon Jan 17 2011 Stanislav Ochotnicky <sochotnicky@redhat.com> - 3.2.3-2
 - Use maven 3 to build
 - Drop ant-contrib depmap (no longer needed)
