@@ -1,7 +1,6 @@
-
 Name:           netty
 Version:        3.2.3
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
@@ -33,16 +32,12 @@ BuildRequires:  subversion
 BuildRequires:  protobuf-java
 BuildRequires:  felix-osgi-compendium
 
-
 Requires:       java
 Requires:       protobuf-java
 Requires(post): jpackage-utils
 Requires(postun): jpackage-utils
 
-
 %description
-
-
 Netty is a NIO client server framework which enables quick and easy
 development of network applications such as protocol servers and
 clients. It greatly simplifies and streamlines network programming
@@ -80,12 +75,8 @@ rm src/main/java/org/jboss/netty/logging/JBossLogger*.java
 %patch2 -p1
 
 %build
-export MAVEN_REPO_LOCAL=$(pwd)/.m2/repository
-mkdir -p $MAVEN_REPO_LOCAL
-
 # skipping tests because we don't have all dependencies in Fedora
-mvn-local \
-        -Dmaven.repo.local=$MAVEN_REPO_LOCAL \
+mvn-rpmbuild \
         -Dmaven.test.skip=true \
         install javadoc:javadoc
 
@@ -103,30 +94,23 @@ cp -pr target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}
 install -d -m 755 $RPM_BUILD_ROOT%{_mavenpomdir}
 install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 
-%add_to_maven_depmap org.jboss.netty netty %{version} JPP %{name}
-
-%post
-%update_maven_depmap
-
-%postun
-%update_maven_depmap
-
+%add_maven_depmap JPP-%{name}.pom %{name}.jar
 
 %files
-%defattr(-,root,root,-)
 %doc LICENSE.txt NOTICE.txt
 %{_javadir}/*.jar
 %{_mavendepmapfragdir}/%{name}
 %{_mavenpomdir}/JPP-%{name}.pom
 
 %files javadoc
-%defattr(-,root,root,-)
 %doc LICENSE.txt NOTICE.txt
 %{_javadocdir}/%{name}
 
-
-
 %changelog
+* Mon Jul 4 2011 Alexander Kurtakov <akurtako@redhat.com> 3.2.3-4
+- Fix FTBFS.
+- Adapt to current guidelines.
+
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.3-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
@@ -136,4 +120,3 @@ install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 
 * Thu Jan 13 2011 Stanislav Ochotnicky <sochotnicky@redhat.com> - 3.2.3-1
 - Initial version of the package
-
