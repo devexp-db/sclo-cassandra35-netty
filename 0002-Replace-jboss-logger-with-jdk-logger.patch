@@ -1,7 +1,7 @@
-From 06b89af693f824af86a3103505bb7f93128c22a2 Mon Sep 17 00:00:00 2001
+From 61b66b45737653da51cc25d2771a97c811525e0f Mon Sep 17 00:00:00 2001
 From: Stanislav Ochotnicky <sochotnicky@redhat.com>
 Date: Thu, 13 Jan 2011 15:02:01 +0100
-Subject: [PATCH 3/3] Replace jboss logger with jdk logger
+Subject: [PATCH 2/4] Replace jboss logger with jdk logger
 
 ---
  .../microcontainer/NettyLoggerConfigurator.java    |    4 ++--
@@ -29,5 +29,5 @@ index 2ccc731..eca8a6a 100644
      }
  }
 -- 
-1.7.3.4
+1.7.7.3
 

@@ -1,6 +1,6 @@
 Name:           netty
-Version:        3.2.3
-Release:        4%{?dist}
+Version:        3.2.4
+Release:        1%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
@@ -8,9 +8,10 @@ License:        ASL 2.0
 URL:            http://www.jboss.org/netty
 Source0:        http://sourceforge.net/projects/jboss/files/%{name}-%{version}.Final-dist.tar.bz2
 
-Patch0:         0001-Remove-parent-and-fix-javadoc-plugin-config.patch
-Patch1:         0002-Remove-optional-deps.patch
-Patch2:         0003-Replace-jboss-logger-with-jdk-logger.patch
+Patch0:         0001-Remove-optional-deps.patch
+Patch1:         0002-Replace-jboss-logger-with-jdk-logger.patch
+Patch2:         0003-Fix-javadoc-plugin-configuration.patch
+Patch3:         0004-Remove-antun-execution-for-removing-examples.patch
 
 BuildArch:     noarch
 
@@ -31,11 +32,10 @@ BuildRequires:  ant-contrib
 BuildRequires:  subversion
 BuildRequires:  protobuf-java
 BuildRequires:  felix-osgi-compendium
+BuildRequires:  jboss-parent
 
 Requires:       java
 Requires:       protobuf-java
-Requires(post): jpackage-utils
-Requires(postun): jpackage-utils
 
 %description
 Netty is a NIO client server framework which enables quick and easy
@@ -66,6 +66,9 @@ Requires:  jpackage-utils
 # just to be sure, but not used anyway
 rm -rf jar/
 
+# example doesn't build with our protobuf
+rm -rf src/main/java/org/jboss/netty/example/localtime
+
 
 %patch0 -p1
 %patch1 -p1
@@ -73,11 +76,11 @@ rm -rf jar/
 # we don't have jboss logging facilites so we replace it with jdk logger
 rm src/main/java/org/jboss/netty/logging/JBossLogger*.java
 %patch2 -p1
+%patch3 -p1
 
 %build
 # skipping tests because we don't have all dependencies in Fedora
-mvn-rpmbuild \
-        -Dmaven.test.skip=true \
+mvn-rpmbuild -Dmaven.test.skip=true \
         install javadoc:javadoc
 
 
@@ -98,7 +101,7 @@ install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 
 %files
 %doc LICENSE.txt NOTICE.txt
-%{_javadir}/*.jar
+%{_javadir}/%{name}.jar
 %{_mavendepmapfragdir}/%{name}
 %{_mavenpomdir}/JPP-%{name}.pom
 
@@ -107,6 +110,9 @@ install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 %{_javadocdir}/%{name}
 
 %changelog
+* Mon Dec  5 2011 Stanislav Ochotnicky <sochotnicky@redhat.com> - 3.2.4-1
+- Update to latest upstream version
+
 * Mon Jul 4 2011 Alexander Kurtakov <akurtako@redhat.com> 3.2.3-4
 - Fix FTBFS.
 - Adapt to current guidelines.
