@@ -1,6 +1,6 @@
 Name:           netty
 Version:        3.2.4
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
@@ -12,6 +12,7 @@ Patch0:         0001-Remove-optional-deps.patch
 Patch1:         0002-Replace-jboss-logger-with-jdk-logger.patch
 Patch2:         0003-Fix-javadoc-plugin-configuration.patch
 Patch3:         0004-Remove-antun-execution-for-removing-examples.patch
+Patch4:         0005-Remove-eclipse-plugin.patch
 
 BuildArch:     noarch
 
@@ -20,7 +21,6 @@ BuildRequires:  maven
 BuildRequires:  maven-antrun-plugin
 BuildRequires:  maven-assembly-plugin
 BuildRequires:  maven-compiler-plugin
-BuildRequires:  maven-eclipse-plugin
 BuildRequires:  maven-javadoc-plugin
 BuildRequires:  maven-resources-plugin
 BuildRequires:  maven-release-plugin
@@ -77,6 +77,7 @@ rm -rf src/main/java/org/jboss/netty/example/localtime
 rm src/main/java/org/jboss/netty/logging/JBossLogger*.java
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 %build
 # skipping tests because we don't have all dependencies in Fedora
@@ -110,6 +111,9 @@ install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 %{_javadocdir}/%{name}
 
 %changelog
+* Wed Apr 18 2012 Stanislav Ochotnicky <sochotnicky@redhat.com> - 3.2.4-3
+- Remove eclipse plugin from BuildRequires
+
 * Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.4-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
