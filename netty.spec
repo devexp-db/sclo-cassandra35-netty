@@ -1,6 +1,6 @@
 Name:           netty
 Version:        3.2.4
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
@@ -21,6 +21,7 @@ BuildRequires:  maven
 BuildRequires:  maven-antrun-plugin
 BuildRequires:  maven-assembly-plugin
 BuildRequires:  maven-compiler-plugin
+BuildRequires:  maven-enforcer-plugin
 BuildRequires:  maven-javadoc-plugin
 BuildRequires:  maven-resources-plugin
 BuildRequires:  maven-release-plugin
@@ -111,6 +112,9 @@ install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 %{_javadocdir}/%{name}
 
 %changelog
+* Fri May 18 2012 Stanislav Ochotnicky <sochotnicky@redhat.com> - 3.2.4-4
+- Add enforcer-plugin to BR
+
 * Wed Apr 18 2012 Stanislav Ochotnicky <sochotnicky@redhat.com> - 3.2.4-3
 - Remove eclipse plugin from BuildRequires
 
