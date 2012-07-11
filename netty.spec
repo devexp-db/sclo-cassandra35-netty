@@ -8,13 +8,12 @@ License:        ASL 2.0
 URL:            http://www.jboss.org/netty
 Source0:        http://sourceforge.net/projects/jboss/files/%{name}-%{version}.Final-dist.tar.bz2
 
-Patch0:         0001-Remove-optional-deps.patch
-Patch1:         0002-Replace-jboss-logger-with-jdk-logger.patch
-Patch2:         0003-Fix-javadoc-plugin-configuration.patch
-Patch3:         0004-Remove-antun-execution-for-removing-examples.patch
-Patch4:         0005-Remove-eclipse-plugin.patch
+Patch1:         0001-Remove-optional-deps.patch
+Patch3:         0003-Fix-javadoc-plugin-configuration.patch
+Patch4:         0004-Remove-antun-execution-for-removing-examples.patch
+Patch5:         0005-Remove-eclipse-plugin.patch
 
-BuildArch:     noarch
+BuildArch:      noarch
 
 # This pulls in all of the required java and maven stuff
 BuildRequires:  maven
@@ -34,6 +33,7 @@ BuildRequires:  subversion
 BuildRequires:  protobuf-java
 BuildRequires:  felix-osgi-compendium
 BuildRequires:  jboss-parent
+BuildRequires:  jboss-logging
 
 Requires:       java
 Requires:       protobuf-java
@@ -70,20 +70,15 @@ rm -rf jar/
 # example doesn't build with our protobuf
 rm -rf src/main/java/org/jboss/netty/example/localtime
 
-
-%patch0 -p1
 %patch1 -p1
-
-# we don't have jboss logging facilites so we replace it with jdk logger
-rm src/main/java/org/jboss/netty/logging/JBossLogger*.java
-%patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 
 %build
 # skipping tests because we don't have all dependencies in Fedora
 mvn-rpmbuild -Dmaven.test.skip=true \
-        install javadoc:javadoc
+        install javadoc:aggregate
 
 
 %install
