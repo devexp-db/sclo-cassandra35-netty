@@ -9,7 +9,6 @@ URL:            http://www.jboss.org/netty
 Source0:        http://sourceforge.net/projects/jboss/files/%{name}-%{version}.Final-dist.tar.bz2
 
 Patch1:         0001-Remove-optional-deps.patch
-Patch3:         0003-Fix-javadoc-plugin-configuration.patch
 Patch4:         0004-Remove-antun-execution-for-removing-examples.patch
 Patch5:         0005-Remove-eclipse-plugin.patch
 
@@ -34,6 +33,8 @@ BuildRequires:  protobuf-java
 BuildRequires:  felix-osgi-compendium
 BuildRequires:  jboss-parent
 BuildRequires:  jboss-logging
+BuildRequires:  apiviz
+BuildRequires:  graphviz
 
 Requires:       java
 Requires:       protobuf-java
@@ -71,7 +72,6 @@ rm -rf jar/
 rm -rf src/main/java/org/jboss/netty/example/localtime
 
 %patch1 -p1
-%patch3 -p1
 %patch4 -p1
 %patch5 -p1
 
@@ -89,7 +89,7 @@ install -m 644 target/%{name}-%{version}.Final.jar \
 
 
 install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}
-cp -pr target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+cp -pr target/api/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}
 
 install -d -m 755 $RPM_BUILD_ROOT%{_mavenpomdir}
 install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
