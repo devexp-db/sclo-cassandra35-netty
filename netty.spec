@@ -8,10 +8,6 @@ License:        ASL 2.0
 URL:            http://www.jboss.org/netty
 Source0:        http://sourceforge.net/projects/jboss/files/%{name}-%{version}.Final-dist.tar.bz2
 
-Patch1:         0001-Remove-optional-deps.patch
-Patch4:         0004-Remove-antun-execution-for-removing-examples.patch
-Patch5:         0005-Remove-eclipse-plugin.patch
-
 BuildArch:      noarch
 
 # This pulls in all of the required java and maven stuff
@@ -26,6 +22,7 @@ BuildRequires:  maven-release-plugin
 BuildRequires:  maven-source-plugin
 BuildRequires:  maven-surefire-plugin
 BuildRequires:  maven-plugin-bundle
+BuildRequires:  maven-plugin-jxr
 BuildRequires:  buildnumber-maven-plugin
 BuildRequires:  ant-contrib
 BuildRequires:  subversion
@@ -71,9 +68,10 @@ rm -rf jar/
 # example doesn't build with our protobuf
 rm -rf src/main/java/org/jboss/netty/example/localtime
 
-%patch1 -p1
-%patch4 -p1
-%patch5 -p1
+%pom_remove_plugin :maven-eclipse-plugin
+%pom_remove_plugin :maven-jdocbook-plugin
+%pom_xpath_remove "pom:execution[pom:id[text()='remove-examples']]"
+sed -i s/-spi// pom.xml
 
 %build
 # skipping tests because we don't have all dependencies in Fedora
