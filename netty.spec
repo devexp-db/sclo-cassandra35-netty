@@ -1,39 +1,38 @@
 Name:           netty
-Version:        3.2.4
-Release:        4%{?dist}
+Version:        3.5.2
+Release:        1%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
 License:        ASL 2.0
-URL:            http://www.jboss.org/netty
-Source0:        http://sourceforge.net/projects/jboss/files/%{name}-%{version}.Final-dist.tar.bz2
+URL:            https://netty.io/
+Source0:        https://github.com/downloads/%{name}/%{name}/%{name}-%{version}.Final-dist.tar.bz2
 
 BuildArch:      noarch
 
-# This pulls in all of the required java and maven stuff
 BuildRequires:  maven
 BuildRequires:  maven-antrun-plugin
 BuildRequires:  maven-assembly-plugin
 BuildRequires:  maven-compiler-plugin
 BuildRequires:  maven-enforcer-plugin
 BuildRequires:  maven-javadoc-plugin
+BuildRequires:  maven-plugin-bundle
 BuildRequires:  maven-resources-plugin
-BuildRequires:  maven-release-plugin
 BuildRequires:  maven-source-plugin
 BuildRequires:  maven-surefire-plugin
-BuildRequires:  maven-plugin-bundle
-BuildRequires:  maven-plugin-jxr
-BuildRequires:  buildnumber-maven-plugin
 BuildRequires:  ant-contrib
-BuildRequires:  subversion
-BuildRequires:  protobuf-java
+
 BuildRequires:  felix-osgi-compendium
-BuildRequires:  jboss-parent
+BuildRequires:  felix-osgi-core
 BuildRequires:  jboss-logging
-BuildRequires:  apiviz
-BuildRequires:  graphviz
+BuildRequires:  jboss-marshalling
+BuildRequires:  protobuf-java
+BuildRequires:  slf4j
+BuildRequires:  sonatype-oss-parent
+BuildRequires:  tomcat-servlet-3.0-api
 
 Requires:       java
+Requires:       jpackage-utils
 Requires:       protobuf-java
 
 %description
@@ -61,22 +60,22 @@ Requires:  jpackage-utils
 
 %prep
 %setup -q -n %{name}-%{version}.Final
-
 # just to be sure, but not used anyway
-rm -rf jar/
+rm -rf jar doc license
 
-# example doesn't build with our protobuf
-rm -rf src/main/java/org/jboss/netty/example/localtime
-
-%pom_remove_plugin :maven-eclipse-plugin
-%pom_remove_plugin :maven-jdocbook-plugin
+%pom_xpath_remove "pom:plugin[pom:artifactId[text()='maven-jxr-plugin']]"
+%pom_xpath_remove "pom:plugin[pom:artifactId[text()='maven-checkstyle-plugin']]"
+%pom_remove_plugin org.eclipse.m2e:lifecycle-mapping
+%pom_remove_dep javax.activation:activation
+%pom_remove_plugin :animal-sniffer-maven-plugin
 %pom_xpath_remove "pom:execution[pom:id[text()='remove-examples']]"
-sed -i s/-spi// pom.xml
+%pom_xpath_remove "pom:plugin[pom:artifactId[text()='maven-javadoc-plugin']]/pom:configuration"
+
+sed s/jboss-logging-spi/jboss-logging/ -i pom.xml
 
 %build
-# skipping tests because we don't have all dependencies in Fedora
-mvn-rpmbuild -Dmaven.test.skip=true \
-        install javadoc:aggregate
+# skipping tests because we don't have easymockclassextension
+mvn-rpmbuild -Dmaven.test.skip=true install javadoc:aggregate
 
 
 %install
@@ -85,9 +84,8 @@ install -d -m 755 $RPM_BUILD_ROOT%{_javadir}
 install -m 644 target/%{name}-%{version}.Final.jar \
   $RPM_BUILD_ROOT%{_javadir}/%{name}.jar
 
-
 install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}
-cp -pr target/api/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+cp -pr target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}
 
 install -d -m 755 $RPM_BUILD_ROOT%{_mavenpomdir}
 install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
@@ -105,6 +103,11 @@ install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 %{_javadocdir}/%{name}
 
 %changelog
+* Thu Jul 12 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.5.2-1
+- Update to upstream version 3.5.2
+- Convert patches to POM macros
+- Enable jboss-logging
+
 * Fri May 18 2012 Stanislav Ochotnicky <sochotnicky@redhat.com> - 3.2.4-4
 - Add enforcer-plugin to BR
 
