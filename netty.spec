@@ -1,6 +1,6 @@
 Name:           netty
 Version:        3.5.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
@@ -90,7 +90,7 @@ cp -pr target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}
 install -d -m 755 $RPM_BUILD_ROOT%{_mavenpomdir}
 install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 
-%add_maven_depmap JPP-%{name}.pom %{name}.jar
+%add_maven_depmap -a org.jboss.netty:netty JPP-%{name}.pom %{name}.jar
 
 %files
 %doc LICENSE.txt NOTICE.txt
@@ -103,6 +103,10 @@ install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 %{_javadocdir}/%{name}
 
 %changelog
+* Mon Jul 16 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.5.2-2
+- Add additional depmap for org.jboss.netty:netty
+- Fixes #840301
+
 * Thu Jul 12 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.5.2-1
 - Update to upstream version 3.5.2
 - Convert patches to POM macros
