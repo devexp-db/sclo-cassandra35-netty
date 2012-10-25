@@ -1,5 +1,5 @@
 Name:           netty
-Version:        3.5.8
+Version:        3.5.9
 Release:        1%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
@@ -103,6 +103,9 @@ install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 %{_javadocdir}/%{name}
 
 %changelog
+* Thu Oct 25 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.5.9-1
+- Update to upstream version 3.5.9
+
 * Fri Oct  5 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.5.8-1
 - Update to upstream version 3.5.8
 
