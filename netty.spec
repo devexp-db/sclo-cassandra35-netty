@@ -1,12 +1,14 @@
 Name:           netty
 Version:        3.5.11
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
 License:        ASL 2.0
 URL:            https://netty.io/
 Source0:        https://github.com/downloads/%{name}/%{name}/%{name}-%{version}.Final-dist.tar.bz2
+
+Patch0:         %{name}-port-to-jzlib-1.1.0.patch
 
 BuildArch:      noarch
 
@@ -73,6 +75,13 @@ rm -rf jar doc license
 
 sed s/jboss-logging-spi/jboss-logging/ -i pom.xml
 
+# Remove bundled jzlib and use system jzlib
+rm -rf src/main/java/org/jboss/netty/util/internal/jzlib
+%pom_add_dep com.jcraft:jzlib
+sed -i s/org.jboss.netty.util.internal.jzlib/com.jcraft.jzlib/ \
+    $(find src/main/java/org/jboss/netty/handler/codec -name \*.java | sort -u)
+%patch0 -p1
+
 %build
 # skipping tests because we don't have easymockclassextension
 mvn-rpmbuild -Dmaven.test.skip=true install javadoc:aggregate
@@ -103,6 +112,10 @@ install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
 %{_javadocdir}/%{name}
 
 %changelog
+* Thu Dec 13 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.5.11-2
+- Use system jzlib instead of bundled jzlib
+- Resolves: rhbz#878391
+
 * Mon Dec  3 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.5.11-1
 - Update to upstream version 3.5.11
 
