@@ -1,18 +1,17 @@
 Name:           netty
-Version:        3.5.11
-Release:        2%{?dist}
+Version:        3.6.1
+Release:        1%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
 License:        ASL 2.0
 URL:            https://netty.io/
-Source0:        https://github.com/downloads/%{name}/%{name}/%{name}-%{version}.Final-dist.tar.bz2
-
+Source0:        http://%{name}.googlecode.com/files/%{name}-%{version}.Final-dist.tar.bz2
 Patch0:         %{name}-port-to-jzlib-1.1.0.patch
 
 BuildArch:      noarch
 
-BuildRequires:  maven
+BuildRequires:  xmvn >= 0.2.3
 BuildRequires:  maven-antrun-plugin
 BuildRequires:  maven-assembly-plugin
 BuildRequires:  maven-compiler-plugin
@@ -33,10 +32,6 @@ BuildRequires:  slf4j
 BuildRequires:  sonatype-oss-parent
 BuildRequires:  tomcat-servlet-3.0-api
 
-Requires:       java
-Requires:       jpackage-utils
-Requires:       protobuf-java
-
 %description
 Netty is a NIO client server framework which enables quick and easy
 development of network applications such as protocol servers and
@@ -55,7 +50,6 @@ flexibility without a compromise.
 %package javadoc
 Summary:   API documentation for %{name}
 Group:     Documentation
-Requires:  jpackage-utils
 
 %description javadoc
 %{summary}.
@@ -83,35 +77,24 @@ sed -i s/org.jboss.netty.util.internal.jzlib/com.jcraft.jzlib/ \
 %patch0 -p1
 
 %build
+%mvn_alias : org.jboss.netty:
+%mvn_file  : %{name}
 # skipping tests because we don't have easymockclassextension
-mvn-rpmbuild -Dmaven.test.skip=true install javadoc:aggregate
-
+%mvn_build -f
 
 %install
-install -d -m 755 $RPM_BUILD_ROOT%{_javadir}
+%mvn_install
 
-install -m 644 target/%{name}-%{version}.Final.jar \
-  $RPM_BUILD_ROOT%{_javadir}/%{name}.jar
-
-install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}
-cp -pr target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}
-
-install -d -m 755 $RPM_BUILD_ROOT%{_mavenpomdir}
-install -pm 644 pom.xml $RPM_BUILD_ROOT/%{_mavenpomdir}/JPP-%{name}.pom
-
-%add_maven_depmap -a org.jboss.netty:netty JPP-%{name}.pom %{name}.jar
-
-%files
+%files -f .mfiles
 %doc LICENSE.txt NOTICE.txt
-%{_javadir}/%{name}.jar
-%{_mavendepmapfragdir}/%{name}
-%{_mavenpomdir}/JPP-%{name}.pom
 
-%files javadoc
+%files javadoc -f .mfiles-javadoc
 %doc LICENSE.txt NOTICE.txt
-%{_javadocdir}/%{name}
 
 %changelog
+* Tue Jan 15 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.6.1-1
+- Update to upstream version 3.6.1
+
 * Thu Dec 13 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.5.11-2
 - Use system jzlib instead of bundled jzlib
 - Resolves: rhbz#878391
