@@ -11,7 +11,7 @@ Patch0:         %{name}-port-to-jzlib-1.1.0.patch
 
 BuildArch:      noarch
 
-BuildRequires:  maven-local >= 0.2.3
+BuildRequires:  maven-local
 BuildRequires:  maven-antrun-plugin
 BuildRequires:  maven-assembly-plugin
 BuildRequires:  maven-compiler-plugin
