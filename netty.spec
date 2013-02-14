@@ -1,6 +1,6 @@
 Name:           netty
 Version:        3.6.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
@@ -92,6 +92,9 @@ sed -i s/org.jboss.netty.util.internal.jzlib/com.jcraft.jzlib/ \
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.6.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
 * Wed Feb 06 2013 Java SIG <java-devel@lists.fedoraproject.org> - 3.6.2-2
 - Update for https://fedoraproject.org/wiki/Fedora_19_Maven_Rebuild
 - Replace maven BuildRequires with maven-local
