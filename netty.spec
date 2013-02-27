@@ -1,6 +1,6 @@
 Name:           netty
 Version:        3.6.3
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
@@ -59,13 +59,15 @@ Group:     Documentation
 # just to be sure, but not used anyway
 rm -rf jar doc license
 
-%pom_xpath_remove "pom:plugin[pom:artifactId[text()='maven-jxr-plugin']]"
-%pom_xpath_remove "pom:plugin[pom:artifactId[text()='maven-checkstyle-plugin']]"
+%pom_remove_plugin :maven-jxr-plugin
+%pom_remove_plugin :maven-checkstyle-plugin
 %pom_remove_plugin org.eclipse.m2e:lifecycle-mapping
 %pom_remove_dep javax.activation:activation
 %pom_remove_plugin :animal-sniffer-maven-plugin
 %pom_xpath_remove "pom:execution[pom:id[text()='remove-examples']]"
 %pom_xpath_remove "pom:plugin[pom:artifactId[text()='maven-javadoc-plugin']]/pom:configuration"
+# Felix framework is optional, thus set scope to provided
+%pom_xpath_set "pom:dependency[pom:groupId[text()='org.apache.felix']]/pom:scope" provided
 
 sed s/jboss-logging-spi/jboss-logging/ -i pom.xml
 
@@ -92,6 +94,10 @@ sed -i s/org.jboss.netty.util.internal.jzlib/com.jcraft.jzlib/ \
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Wed Feb 27 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.6.3-2
+- Drop dependency on OSGi
+- Resolves: rhbz#916139
+
 * Mon Feb 25 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.6.3-1
 - Update to upstream version 3.6.3
 
