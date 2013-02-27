@@ -1,6 +1,6 @@
 Name:           netty
 Version:        3.6.3
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
@@ -66,8 +66,9 @@ rm -rf jar doc license
 %pom_remove_plugin :animal-sniffer-maven-plugin
 %pom_xpath_remove "pom:execution[pom:id[text()='remove-examples']]"
 %pom_xpath_remove "pom:plugin[pom:artifactId[text()='maven-javadoc-plugin']]/pom:configuration"
-# Felix framework is optional, thus set scope to provided
-%pom_xpath_set "pom:dependency[pom:groupId[text()='org.apache.felix']]/pom:scope" provided
+# Set scope of optional compile dependencies to 'provided'
+%pom_xpath_set "pom:dependency[pom:scope[text()='compile']
+	       and pom:optional[text()='true']]/pom:scope" provided
 
 sed s/jboss-logging-spi/jboss-logging/ -i pom.xml
 
@@ -94,6 +95,9 @@ sed -i s/org.jboss.netty.util.internal.jzlib/com.jcraft.jzlib/ \
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Wed Feb 27 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.6.3-3
+- Set scope of optional compile dependencies to 'provided'
+
 * Wed Feb 27 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.6.3-2
 - Drop dependency on OSGi
 - Resolves: rhbz#916139
