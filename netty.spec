@@ -1,6 +1,6 @@
 Name:           netty
-Version:        3.6.3
-Release:        3%{?dist}
+Version:        3.6.4
+Release:        1%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
 Group:          Development/Libraries
@@ -95,6 +95,9 @@ sed -i s/org.jboss.netty.util.internal.jzlib/com.jcraft.jzlib/ \
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Mon Apr  8 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.6.4-1
+- Update to upstream version 3.6.4
+
 * Wed Feb 27 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.6.3-3
 - Set scope of optional compile dependencies to 'provided'
 
