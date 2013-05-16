@@ -1,5 +1,5 @@
 Name:           netty
-Version:        3.6.5
+Version:        3.6.6
 Release:        1%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 
@@ -95,6 +95,9 @@ sed -i s/org.jboss.netty.util.internal.jzlib/com.jcraft.jzlib/ \
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Thu May 16 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.6.6-1
+- Update to upstream version 3.6.6
+
 * Wed Apr 10 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.6.5-1
 - Update to upstream version 3.6.5
 
