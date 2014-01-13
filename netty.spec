@@ -3,7 +3,7 @@
 
 Name:           netty
 Version:        4.0.14
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
@@ -24,6 +24,9 @@ BuildRequires:  ant-contrib
 BuildRequires:  rxtx
 BuildRequires:  protobuf-java
 BuildRequires:  jboss-marshalling
+
+Provides:       netty4 = %{version}-%{release}
+Obsoletes:      netty4 < %{version}-%{release}
 
 %description
 Netty is a NIO client server framework which enables quick and easy
@@ -76,6 +79,9 @@ Summary:   API documentation for %{name}
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Mon Jan 13 2014 Marek Goldmann <mgoldman@redhat.com> - 4.0.14-2
+- Bump the release, so Obsoletes work properly
+
 * Mon Dec 30 2013 Marek Goldmann <mgoldman@redhat.com> - 4.0.14-1
 - Upstream release 4.0.14.Final
 
