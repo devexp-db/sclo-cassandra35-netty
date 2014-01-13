@@ -3,7 +3,7 @@
 
 Name:           netty
 Version:        4.0.14
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
@@ -20,6 +20,9 @@ BuildRequires:  maven-plugin-bundle
 BuildRequires:  maven-resources-plugin
 BuildRequires:  maven-source-plugin
 BuildRequires:  maven-surefire-plugin
+BuildRequires:  maven-dependency-plugin
+BuildRequires:  maven-clean-plugin
+BuildRequires:  maven-plugin-jxr
 BuildRequires:  ant-contrib
 BuildRequires:  rxtx
 BuildRequires:  protobuf-java
@@ -53,18 +56,25 @@ Summary:   API documentation for %{name}
 
 # Missing Mavenized rxtx
 %pom_disable_module "transport-rxtx"
+%pom_remove_dep ":netty-transport-rxtx" all
 # Missing com.barchart.udt:barchart-udt-bundle:jar:2.3.0
 %pom_disable_module "transport-udt"
+%pom_remove_dep ":netty-transport-udt" all
+%pom_remove_dep ":netty-build" all
 # Not needed
 %pom_disable_module "example"
+%pom_remove_dep ":netty-example" all
 %pom_disable_module "testsuite"
-%pom_disable_module "all"
 %pom_disable_module "tarball"
 %pom_disable_module "microbench"
 %pom_remove_plugin :maven-checkstyle-plugin
 %pom_remove_plugin :animal-sniffer-maven-plugin
 %pom_remove_plugin :maven-enforcer-plugin
 %pom_remove_plugin :maven-antrun-plugin
+
+sed -i 's|taskdef|taskdef classpathref="maven.plugin.classpath"|' all/pom.xml
+
+%pom_xpath_inject "pom:plugins/pom:plugin[pom:artifactId = 'maven-antrun-plugin']" '<dependencies><dependency><groupId>ant-contrib</groupId><artifactId>ant-contrib</artifactId><version>1.0b3</version></dependency></dependencies>' all/pom.xml
 
 %build
 %mvn_build -f
@@ -79,6 +89,9 @@ Summary:   API documentation for %{name}
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Mon Jan 13 2014 Marek Goldmann <mgoldman@redhat.com> - 4.0.14-3
+- Enable netty-all.jar artifact
+
 * Mon Jan 13 2014 Marek Goldmann <mgoldman@redhat.com> - 4.0.14-2
 - Bump the release, so Obsoletes work properly
 
