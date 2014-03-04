@@ -3,7 +3,7 @@
 
 Name:           netty
 Version:        4.0.14
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
@@ -89,6 +89,9 @@ sed -i 's|taskdef|taskdef classpathref="maven.plugin.classpath"|' all/pom.xml
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Tue Mar 04 2014 Stanislav Ochotnicky <sochotnicky@redhat.com> - 4.0.14-4
+- Use Requires: java-headless rebuild (#1067528)
+
 * Mon Jan 13 2014 Marek Goldmann <mgoldman@redhat.com> - 4.0.14-3
 - Enable netty-all.jar artifact
 
