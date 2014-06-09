@@ -2,31 +2,43 @@
 %global namedversion %{version}%{?namedreltag}
 
 Name:           netty
-Version:        4.0.14
-Release:        5%{?dist}
+Version:        4.0.19
+Release:        1%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
 Source0:        https://github.com/netty/netty/archive/netty-%{namedversion}.tar.gz
 
-BuildArch:      noarch
-
 BuildRequires:  maven-local
-BuildRequires:  maven-antrun-plugin
-BuildRequires:  maven-assembly-plugin
-BuildRequires:  maven-compiler-plugin
-BuildRequires:  maven-enforcer-plugin
-BuildRequires:  maven-plugin-bundle
-BuildRequires:  maven-resources-plugin
-BuildRequires:  maven-source-plugin
-BuildRequires:  maven-surefire-plugin
-BuildRequires:  maven-dependency-plugin
-BuildRequires:  maven-clean-plugin
-BuildRequires:  maven-plugin-jxr
-BuildRequires:  ant-contrib
-BuildRequires:  rxtx
-BuildRequires:  protobuf-java
-BuildRequires:  jboss-marshalling
+BuildRequires:  mvn(ant-contrib:ant-contrib)
+BuildRequires:  mvn(ch.qos.logback:logback-classic)
+BuildRequires:  mvn(com.google.protobuf:protobuf-java)
+BuildRequires:  mvn(com.jcraft:jzlib)
+BuildRequires:  mvn(commons-logging:commons-logging)
+BuildRequires:  mvn(junit:junit)
+BuildRequires:  mvn(log4j:log4j)
+BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
+BuildRequires:  mvn(org.apache.maven.plugins:maven-antrun-plugin)
+BuildRequires:  mvn(org.apache.maven.plugins:maven-checkstyle-plugin)
+BuildRequires:  mvn(org.apache.maven.plugins:maven-clean-plugin)
+BuildRequires:  mvn(org.apache.maven.plugins:maven-dependency-plugin)
+BuildRequires:  mvn(org.apache.maven.plugins:maven-deploy-plugin)
+BuildRequires:  mvn(org.apache.maven.plugins:maven-jxr-plugin)
+BuildRequires:  mvn(org.apache.maven.plugins:maven-release-plugin)
+BuildRequires:  mvn(org.apache.maven.plugins:maven-source-plugin)
+BuildRequires:  mvn(org.apache.maven.scm:maven-scm-api)
+BuildRequires:  mvn(org.apache.maven.scm:maven-scm-provider-gitexe)
+BuildRequires:  mvn(org.codehaus.mojo:build-helper-maven-plugin)
+BuildRequires:  mvn(org.easymock:easymock)
+BuildRequires:  mvn(org.easymock:easymockclassextension)
+BuildRequires:  mvn(org.fusesource.hawtjni:maven-hawtjni-plugin)
+BuildRequires:  mvn(org.javassist:javassist)
+BuildRequires:  mvn(org.jboss.marshalling:jboss-marshalling)
+BuildRequires:  mvn(org.jboss.marshalling:jboss-marshalling-river)
+BuildRequires:  mvn(org.jboss.marshalling:jboss-marshalling-serial)
+BuildRequires:  mvn(org.jmock:jmock-junit4)
+BuildRequires:  mvn(org.slf4j:slf4j-api)
+BuildRequires:  mvn(org.sonatype.oss:oss-parent:pom:)
 
 Provides:       netty4 = %{version}-%{release}
 Obsoletes:      netty4 < %{version}-%{release}
@@ -76,6 +88,12 @@ sed -i 's|taskdef|taskdef classpathref="maven.plugin.classpath"|' all/pom.xml
 
 %pom_xpath_inject "pom:plugins/pom:plugin[pom:artifactId = 'maven-antrun-plugin']" '<dependencies><dependency><groupId>ant-contrib</groupId><artifactId>ant-contrib</artifactId><version>1.0b3</version></dependency></dependencies>' all/pom.xml
 
+# Java is exempt from multilb - disable 32-bit library on 64-bit
+# architectures and vice versa.
+%pom_xpath_remove "pom:execution[pom:id='build-linux32']" transport-native-epoll
+sed -i "s/linux64/linux%{__isa_bits}/" transport-native-epoll/pom.xml
+sed -i "s/x86_64/%{_arch}/" transport-native-epoll/pom.xml
+
 %build
 %mvn_build -f
 
@@ -89,6 +107,10 @@ sed -i 's|taskdef|taskdef classpathref="maven.plugin.classpath"|' all/pom.xml
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Mon Jun  9 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 4.0.19-1
+- Update to upstream version 4.0.19
+- Convert to arch-specific package
+
 * Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.0.14-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
