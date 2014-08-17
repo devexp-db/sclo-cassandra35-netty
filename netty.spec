@@ -3,7 +3,7 @@
 
 Name:           netty
 Version:        4.0.19
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
@@ -107,6 +107,9 @@ sed -i "s/x86_64/%{_arch}/" transport-native-epoll/pom.xml
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.0.19-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
 * Mon Jun  9 2014 Mikolaj Izdebski <mizdebsk@redhat.com> - 4.0.19-1
 - Update to upstream version 4.0.19
 - Convert to arch-specific package
