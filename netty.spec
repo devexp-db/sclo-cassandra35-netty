@@ -3,7 +3,7 @@
 
 Name:           netty
 Version:        4.0.19
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
@@ -30,7 +30,6 @@ BuildRequires:  mvn(org.apache.maven.scm:maven-scm-api)
 BuildRequires:  mvn(org.apache.maven.scm:maven-scm-provider-gitexe)
 BuildRequires:  mvn(org.codehaus.mojo:build-helper-maven-plugin)
 BuildRequires:  mvn(org.easymock:easymock)
-BuildRequires:  mvn(org.easymock:easymockclassextension)
 BuildRequires:  mvn(org.fusesource.hawtjni:maven-hawtjni-plugin)
 BuildRequires:  mvn(org.javassist:javassist)
 BuildRequires:  mvn(org.jboss.marshalling:jboss-marshalling)
@@ -107,6 +106,10 @@ sed -i "s/x86_64/%{_arch}/" transport-native-epoll/pom.xml
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Wed Apr 01 2015 Severin Gehwolf <sgehwolf@redhat.com> - 4.0.19-3
+- Drop mvn(org.easymock:easymockclassextension) BR.
+  Resolves: RHBZ#1207991
+
 * Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.0.19-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
