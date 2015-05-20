@@ -1,13 +1,17 @@
+# Disable generation of debuginfo package
+%global debug_package %{nil}
 %global namedreltag .Final
 %global namedversion %{version}%{?namedreltag}
 
 Name:           netty
-Version:        4.0.19
-Release:        3%{?dist}
+Version:        4.0.28
+Release:        1%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
 Source0:        https://github.com/netty/netty/archive/netty-%{namedversion}.tar.gz
+Patch0:         npn_alpn_ssl_fixes.patch
+Patch1:         transport-native-epoll-configure-fix.patch
 
 BuildRequires:  maven-local
 BuildRequires:  mvn(ant-contrib:ant-contrib)
@@ -38,6 +42,8 @@ BuildRequires:  mvn(org.jboss.marshalling:jboss-marshalling-serial)
 BuildRequires:  mvn(org.jmock:jmock-junit4)
 BuildRequires:  mvn(org.slf4j:slf4j-api)
 BuildRequires:  mvn(org.sonatype.oss:oss-parent:pom:)
+BuildRequires:  mvn(kr.motd.maven:os-maven-plugin)
+BuildRequires:  mvn(org.bouncycastle:bcpkix-jdk15on)
 
 Provides:       netty4 = %{version}-%{release}
 Obsoletes:      netty4 < %{version}-%{release}
@@ -65,6 +71,9 @@ Summary:   API documentation for %{name}
 %prep
 %setup -q -n netty-netty-%{namedversion}
 
+%patch0 -p1
+%patch1 -p2
+
 # Missing Mavenized rxtx
 %pom_disable_module "transport-rxtx"
 %pom_remove_dep ":netty-transport-rxtx" all
@@ -76,24 +85,38 @@ Summary:   API documentation for %{name}
 %pom_disable_module "example"
 %pom_remove_dep ":netty-example" all
 %pom_disable_module "testsuite"
+%pom_disable_module "testsuite-osgi"
 %pom_disable_module "tarball"
 %pom_disable_module "microbench"
 %pom_remove_plugin :maven-checkstyle-plugin
 %pom_remove_plugin :animal-sniffer-maven-plugin
 %pom_remove_plugin :maven-enforcer-plugin
 %pom_remove_plugin :maven-antrun-plugin
+%pom_remove_plugin :maven-dependency-plugin
+# Optional things we don't ship
+%pom_remove_dep ":netty-tcnative"
+%pom_remove_dep ":netty-tcnative" handler
+%pom_remove_dep "org.eclipse.jetty.npn:npn-api"
+%pom_remove_dep "org.eclipse.jetty.npn:npn-api" handler
+%pom_remove_dep "org.mortbay.jetty.npn:npn-boot"
+%pom_remove_dep "org.mortbay.jetty.npn:npn-boot" handler
+%pom_remove_dep "org.eclipse.jetty.alpn:alpn-api"
+%pom_remove_dep "org.eclipse.jetty.alpn:alpn-api" handler
+%pom_remove_dep "org.mortbay.jetty.alpn:alpn-boot"
+%pom_remove_dep "org.mortbay.jetty.alpn:alpn-boot" handler
 
 sed -i 's|taskdef|taskdef classpathref="maven.plugin.classpath"|' all/pom.xml
 
 %pom_xpath_inject "pom:plugins/pom:plugin[pom:artifactId = 'maven-antrun-plugin']" '<dependencies><dependency><groupId>ant-contrib</groupId><artifactId>ant-contrib</artifactId><version>1.0b3</version></dependency></dependencies>' all/pom.xml
+%pom_xpath_inject "pom:execution[pom:id = 'build-native-lib']/pom:configuration" '<verbose>true</verbose>' transport-native-epoll/pom.xml
 
-# Java is exempt from multilb - disable 32-bit library on 64-bit
-# architectures and vice versa.
-%pom_xpath_remove "pom:execution[pom:id='build-linux32']" transport-native-epoll
-sed -i "s/linux64/linux%{__isa_bits}/" transport-native-epoll/pom.xml
-sed -i "s/x86_64/%{_arch}/" transport-native-epoll/pom.xml
+# Tell xmvn to install attached artifact, which it does not
+# do by default. In this case install all attached artifacts with
+# the linux classifier.
+%mvn_package ":::linux*:"
 
 %build
+export CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="$RPM_LD_FLAGS"
 %mvn_build -f
 
 %install
@@ -106,6 +129,14 @@ sed -i "s/x86_64/%{_arch}/" transport-native-epoll/pom.xml
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Wed May 20 2015 Severin Gehwolf <sgehwolf@redhat.com> - 4.0.28-1
+- Update to upstream 4.0.28 release.
+- Fixes CVE-2015-2156 (HttpOnly cookie bypass).
+- Resolves RHBZ#1111502
+
+* Wed May 20 2015 Severin Gehwolf <sgehwolf@redhat.com> - 4.0.27-1
+- Update to upstream 4.0.27 release.
+
 * Wed Apr 01 2015 Severin Gehwolf <sgehwolf@redhat.com> - 4.0.19-3
 - Drop mvn(org.easymock:easymockclassextension) BR.
   Resolves: RHBZ#1207991
@@ -192,7 +223,7 @@ sed -i "s/x86_64/%{_arch}/" transport-native-epoll/pom.xml
 * Thu Aug 23 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.5.5-1
 - Update to upstream version 3.5.5
 
-* Thu Aug 15 2012 Tomas Rohovsky <trohovsk@redhat.com> - 3.5.4-1
+* Wed Aug 15 2012 Tomas Rohovsky <trohovsk@redhat.com> - 3.5.4-1
 - Update to upstream version 3.5.4
 
 * Tue Jul 24 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 3.5.3-1
