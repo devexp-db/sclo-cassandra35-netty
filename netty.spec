@@ -5,7 +5,7 @@
 
 Name:           netty
 Version:        4.0.28
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
@@ -129,6 +129,9 @@ export CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="$RPM_LD_FLAGS"
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.0.28-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
 * Wed May 20 2015 Severin Gehwolf <sgehwolf@redhat.com> - 4.0.28-1
 - Update to upstream 4.0.28 release.
 - Fixes CVE-2015-2156 (HttpOnly cookie bypass).
