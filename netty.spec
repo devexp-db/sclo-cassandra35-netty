@@ -4,14 +4,15 @@
 %global namedversion %{version}%{?namedreltag}
 
 Name:           netty
-Version:        4.0.28
-Release:        3%{?dist}
+Version:        4.0.42
+Release:        1%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
 Source0:        https://github.com/netty/netty/archive/netty-%{namedversion}.tar.gz
-Patch0:         npn_alpn_ssl_fixes.patch
-Patch1:         transport-native-epoll-configure-fix.patch
+Patch0:         0001-Remove-OpenSSL-parts-depending-on-tcnative.patch
+Patch1:         0002-Remove-NPN-ALPN.patch
+#Patch1:         transport-native-epoll-configure-fix.patch
 
 BuildRequires:  maven-local
 BuildRequires:  mvn(ant-contrib:ant-contrib)
@@ -21,6 +22,7 @@ BuildRequires:  mvn(com.jcraft:jzlib)
 BuildRequires:  mvn(commons-logging:commons-logging)
 BuildRequires:  mvn(junit:junit)
 BuildRequires:  mvn(log4j:log4j)
+BuildRequires:  mvn(org.jctools:jctools-core)
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-antrun-plugin)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-checkstyle-plugin)
@@ -72,7 +74,7 @@ Summary:   API documentation for %{name}
 %setup -q -n netty-netty-%{namedversion}
 
 %patch0 -p1
-%patch1 -p2
+%patch1 -p1
 
 # Missing Mavenized rxtx
 %pom_disable_module "transport-rxtx"
@@ -93,17 +95,16 @@ Summary:   API documentation for %{name}
 %pom_remove_plugin :maven-enforcer-plugin
 %pom_remove_plugin :maven-antrun-plugin
 %pom_remove_plugin :maven-dependency-plugin
+%pom_remove_plugin :maven-shade-plugin
+%pom_remove_plugin :maven-shade-plugin common
+%pom_remove_plugin :xml-maven-plugin
 # Optional things we don't ship
-%pom_remove_dep ":netty-tcnative"
-%pom_remove_dep ":netty-tcnative" handler
+%pom_remove_dep ":\${tcnative.artifactId}"
+%pom_remove_dep ":\${tcnative.artifactId}" handler
 %pom_remove_dep "org.eclipse.jetty.npn:npn-api"
 %pom_remove_dep "org.eclipse.jetty.npn:npn-api" handler
-%pom_remove_dep "org.mortbay.jetty.npn:npn-boot"
-%pom_remove_dep "org.mortbay.jetty.npn:npn-boot" handler
 %pom_remove_dep "org.eclipse.jetty.alpn:alpn-api"
 %pom_remove_dep "org.eclipse.jetty.alpn:alpn-api" handler
-%pom_remove_dep "org.mortbay.jetty.alpn:alpn-boot"
-%pom_remove_dep "org.mortbay.jetty.alpn:alpn-boot" handler
 
 sed -i 's|taskdef|taskdef classpathref="maven.plugin.classpath"|' all/pom.xml
 
@@ -129,6 +130,10 @@ export CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="$RPM_LD_FLAGS"
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Thu Oct 20 2016 Severin Gehwolf <sgehwolf@redhat.com> - 4.0.42-1
+- Update to upstream 4.0.42 release.
+- Resolves RHBZ#1380921
+
 * Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 4.0.28-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
