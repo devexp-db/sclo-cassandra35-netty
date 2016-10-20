@@ -12,7 +12,6 @@ URL:            https://netty.io/
 Source0:        https://github.com/netty/netty/archive/netty-%{namedversion}.tar.gz
 Patch0:         0001-Remove-OpenSSL-parts-depending-on-tcnative.patch
 Patch1:         0002-Remove-NPN-ALPN.patch
-#Patch1:         transport-native-epoll-configure-fix.patch
 
 BuildRequires:  maven-local
 BuildRequires:  mvn(ant-contrib:ant-contrib)
@@ -46,9 +45,6 @@ BuildRequires:  mvn(org.slf4j:slf4j-api)
 BuildRequires:  mvn(org.sonatype.oss:oss-parent:pom:)
 BuildRequires:  mvn(kr.motd.maven:os-maven-plugin)
 BuildRequires:  mvn(org.bouncycastle:bcpkix-jdk15on)
-
-Provides:       netty4 = %{version}-%{release}
-Obsoletes:      netty4 < %{version}-%{release}
 
 %description
 Netty is a NIO client server framework which enables quick and easy
@@ -133,6 +129,9 @@ export CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="$RPM_LD_FLAGS"
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Thu Oct 20 2016 Severin Gehwolf <sgehwolf@redhat.com> - 4.0.42-1
+- Remove old netty4 provides/obsoletes.
+
 * Thu Oct 20 2016 Severin Gehwolf <sgehwolf@redhat.com> - 4.0.42-1
 - Update to upstream 4.0.42 release.
 - Resolves RHBZ#1380921
