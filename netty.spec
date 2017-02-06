@@ -5,7 +5,7 @@
 
 Name:           netty
 Version:        4.0.42
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
@@ -15,36 +15,23 @@ Patch1:         0002-Remove-NPN-ALPN.patch
 
 BuildRequires:  maven-local
 BuildRequires:  mvn(ant-contrib:ant-contrib)
-BuildRequires:  mvn(ch.qos.logback:logback-classic)
 BuildRequires:  mvn(com.google.protobuf:protobuf-java)
 BuildRequires:  mvn(com.jcraft:jzlib)
 BuildRequires:  mvn(commons-logging:commons-logging)
-BuildRequires:  mvn(junit:junit)
-BuildRequires:  mvn(log4j:log4j)
-BuildRequires:  mvn(org.jctools:jctools-core)
+BuildRequires:  mvn(kr.motd.maven:os-maven-plugin)
+BuildRequires:  mvn(log4j:log4j:1.2.17)
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
+BuildRequires:  mvn(org.apache.logging.log4j:log4j-api)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-antrun-plugin)
-BuildRequires:  mvn(org.apache.maven.plugins:maven-checkstyle-plugin)
-BuildRequires:  mvn(org.apache.maven.plugins:maven-clean-plugin)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-dependency-plugin)
-BuildRequires:  mvn(org.apache.maven.plugins:maven-deploy-plugin)
-BuildRequires:  mvn(org.apache.maven.plugins:maven-jxr-plugin)
-BuildRequires:  mvn(org.apache.maven.plugins:maven-release-plugin)
-BuildRequires:  mvn(org.apache.maven.plugins:maven-source-plugin)
-BuildRequires:  mvn(org.apache.maven.scm:maven-scm-api)
-BuildRequires:  mvn(org.apache.maven.scm:maven-scm-provider-gitexe)
+BuildRequires:  mvn(org.bouncycastle:bcpkix-jdk15on)
 BuildRequires:  mvn(org.codehaus.mojo:build-helper-maven-plugin)
-BuildRequires:  mvn(org.easymock:easymock)
 BuildRequires:  mvn(org.fusesource.hawtjni:maven-hawtjni-plugin)
 BuildRequires:  mvn(org.javassist:javassist)
 BuildRequires:  mvn(org.jboss.marshalling:jboss-marshalling)
-BuildRequires:  mvn(org.jboss.marshalling:jboss-marshalling-river)
-BuildRequires:  mvn(org.jboss.marshalling:jboss-marshalling-serial)
-BuildRequires:  mvn(org.jmock:jmock-junit4)
+BuildRequires:  mvn(org.jctools:jctools-core)
 BuildRequires:  mvn(org.slf4j:slf4j-api)
 BuildRequires:  mvn(org.sonatype.oss:oss-parent:pom:)
-BuildRequires:  mvn(kr.motd.maven:os-maven-plugin)
-BuildRequires:  mvn(org.bouncycastle:bcpkix-jdk15on)
 
 %description
 Netty is a NIO client server framework which enables quick and easy
@@ -94,6 +81,11 @@ Summary:   API documentation for %{name}
 %pom_remove_plugin :maven-shade-plugin
 %pom_remove_plugin :maven-shade-plugin common
 %pom_remove_plugin :xml-maven-plugin
+%pom_remove_plugin -r :maven-release-plugin
+%pom_remove_plugin -r :maven-clean-plugin
+%pom_remove_plugin -r :maven-source-plugin
+%pom_remove_plugin -r :maven-deploy-plugin
+%pom_remove_plugin -r :maven-jxr-plugin
 # Optional things we don't ship
 %pom_remove_dep ":\${tcnative.artifactId}"
 %pom_remove_dep ":\${tcnative.artifactId}" handler
@@ -129,6 +121,9 @@ export CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="$RPM_LD_FLAGS"
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Mon Feb 06 2017 Michael Simacek <msimacek@redhat.com> - 4.0.42-2
+- Remove useless plugins
+
 * Thu Oct 20 2016 Severin Gehwolf <sgehwolf@redhat.com> - 4.0.42-1
 - Remove old netty4 provides/obsoletes.
 
