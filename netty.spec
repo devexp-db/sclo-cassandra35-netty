@@ -3,9 +3,11 @@
 %global namedreltag .Final
 %global namedversion %{version}%{?namedreltag}
 
+%bcond_with     jp_minimal
+
 Name:           netty
 Version:        4.0.42
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
@@ -15,7 +17,6 @@ Patch1:         0002-Remove-NPN-ALPN.patch
 
 BuildRequires:  maven-local
 BuildRequires:  mvn(ant-contrib:ant-contrib)
-BuildRequires:  mvn(com.google.protobuf:protobuf-java)
 BuildRequires:  mvn(com.jcraft:jzlib)
 BuildRequires:  mvn(commons-logging:commons-logging)
 BuildRequires:  mvn(kr.motd.maven:os-maven-plugin)
@@ -24,14 +25,17 @@ BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
 BuildRequires:  mvn(org.apache.logging.log4j:log4j-api)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-antrun-plugin)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-dependency-plugin)
-BuildRequires:  mvn(org.bouncycastle:bcpkix-jdk15on)
 BuildRequires:  mvn(org.codehaus.mojo:build-helper-maven-plugin)
 BuildRequires:  mvn(org.fusesource.hawtjni:maven-hawtjni-plugin)
 BuildRequires:  mvn(org.javassist:javassist)
-BuildRequires:  mvn(org.jboss.marshalling:jboss-marshalling)
 BuildRequires:  mvn(org.jctools:jctools-core)
 BuildRequires:  mvn(org.slf4j:slf4j-api)
 BuildRequires:  mvn(org.sonatype.oss:oss-parent:pom:)
+%if %{without jp_minimal}
+BuildRequires:  mvn(com.google.protobuf:protobuf-java)
+BuildRequires:  mvn(org.bouncycastle:bcpkix-jdk15on)
+BuildRequires:  mvn(org.jboss.marshalling:jboss-marshalling)
+%endif
 
 %description
 Netty is a NIO client server framework which enables quick and easy
@@ -94,6 +98,17 @@ Summary:   API documentation for %{name}
 %pom_remove_dep "org.eclipse.jetty.alpn:alpn-api"
 %pom_remove_dep "org.eclipse.jetty.alpn:alpn-api" handler
 
+%if %{with jp_minimal}
+%pom_remove_dep -r "com.google.protobuf:protobuf-java"
+rm codec/src/main/java/io/netty/handler/codec/protobuf/*
+%pom_remove_dep -r "org.jboss.marshalling:jboss-marshalling"
+rm codec/src/main/java/io/netty/handler/codec/marshalling/*
+%pom_remove_dep -r org.bouncycastle
+rm handler/src/main/java/io/netty/handler/ssl/util/BouncyCastleSelfSignedCertGenerator.java
+sed -i '/BouncyCastleSelfSignedCertGenerator/s/.*/throw new UnsupportedOperationException();/' \
+    handler/src/main/java/io/netty/handler/ssl/util/SelfSignedCertificate.java
+%endif
+
 sed -i 's|taskdef|taskdef classpathref="maven.plugin.classpath"|' all/pom.xml
 
 %pom_xpath_inject "pom:plugins/pom:plugin[pom:artifactId = 'maven-antrun-plugin']" '<dependencies><dependency><groupId>ant-contrib</groupId><artifactId>ant-contrib</artifactId><version>1.0b3</version></dependency></dependencies>' all/pom.xml
@@ -121,6 +136,9 @@ export CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="$RPM_LD_FLAGS"
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Wed Mar 15 2017 Michael Simacek <msimacek@redhat.com> - 4.0.42-3
+- Add jp_minimal conditional
+
 * Mon Feb 06 2017 Michael Simacek <msimacek@redhat.com> - 4.0.42-2
 - Remove useless plugins
 
