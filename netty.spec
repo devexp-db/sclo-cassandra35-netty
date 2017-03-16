@@ -7,7 +7,7 @@
 
 Name:           netty
 Version:        4.0.42
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        An asynchronous event-driven network application framework and tools for Java
 License:        ASL 2.0
 URL:            https://netty.io/
@@ -90,6 +90,7 @@ Summary:   API documentation for %{name}
 %pom_remove_plugin -r :maven-source-plugin
 %pom_remove_plugin -r :maven-deploy-plugin
 %pom_remove_plugin -r :maven-jxr-plugin
+%pom_remove_plugin -r :maven-javadoc-plugin
 # Optional things we don't ship
 %pom_remove_dep ":\${tcnative.artifactId}"
 %pom_remove_dep ":\${tcnative.artifactId}" handler
@@ -136,6 +137,9 @@ export CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="$RPM_LD_FLAGS"
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Thu Mar 16 2017 Michael Simacek <msimacek@redhat.com> - 4.0.42-4
+- Remove maven-javadoc-plugin from POM
+
 * Wed Mar 15 2017 Michael Simacek <msimacek@redhat.com> - 4.0.42-3
 - Add jp_minimal conditional
 
