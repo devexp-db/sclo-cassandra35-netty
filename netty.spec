@@ -1,41 +1,61 @@
+%{?scl:%scl_package netty}
+%{!?scl:%global pkg_name %{name}}
+
 # Disable generation of debuginfo package
 %global debug_package %{nil}
 %global namedreltag .Final
 %global namedversion %{version}%{?namedreltag}
 
-%bcond_with     jp_minimal
+%bcond_without	jp_minimal
 
-Name:           netty
-Version:        4.0.42
-Release:        4%{?dist}
-Summary:        An asynchronous event-driven network application framework and tools for Java
-License:        ASL 2.0
-URL:            https://netty.io/
-Source0:        https://github.com/netty/netty/archive/netty-%{namedversion}.tar.gz
-Patch0:         0001-Remove-OpenSSL-parts-depending-on-tcnative.patch
-Patch1:         0002-Remove-NPN-ALPN.patch
+Name:		%{?scl_prefix}netty
+Version:	4.0.42
+Release:	5%{?dist}
+Summary:	An asynchronous event-driven network application framework and tools for Java
+License:	ASL 2.0
+URL:		https://netty.io/
+Source0:	https://github.com/%{pkg_name}/%{pkg_name}/archive/%{pkg_name}-%{namedversion}.tar.gz
+Patch0:		0001-Remove-OpenSSL-parts-depending-on-tcnative.patch
+Patch1:		0002-Remove-NPN-ALPN.patch
 
-BuildRequires:  maven-local
-BuildRequires:  mvn(ant-contrib:ant-contrib)
-BuildRequires:  mvn(com.jcraft:jzlib)
-BuildRequires:  mvn(commons-logging:commons-logging)
-BuildRequires:  mvn(kr.motd.maven:os-maven-plugin)
-BuildRequires:  mvn(log4j:log4j:1.2.17)
-BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
-BuildRequires:  mvn(org.apache.logging.log4j:log4j-api)
-BuildRequires:  mvn(org.apache.maven.plugins:maven-antrun-plugin)
-BuildRequires:  mvn(org.apache.maven.plugins:maven-dependency-plugin)
-BuildRequires:  mvn(org.codehaus.mojo:build-helper-maven-plugin)
-BuildRequires:  mvn(org.fusesource.hawtjni:maven-hawtjni-plugin)
-BuildRequires:  mvn(org.javassist:javassist)
-BuildRequires:  mvn(org.jctools:jctools-core)
-BuildRequires:  mvn(org.slf4j:slf4j-api)
-BuildRequires:  mvn(org.sonatype.oss:oss-parent:pom:)
+Buildrequires:	autoconf
+Buildrequires:	automake
+Buildrequires:	libtool
+BuildRequires:	%{?scl_prefix_maven}maven-local
+BuildRequires:	%{?scl_prefix_maven}ant-contrib
+BuildRequires:	%{?scl_prefix}jzlib
+BuildRequires:	%{?scl_prefix_java_common}apache-commons-logging
+BuildRequires:	%{?scl_prefix_maven}maven-plugin-bundle
+BuildRequires:	%{?scl_prefix}log4j
+BuildRequires:	%{?scl_prefix_maven}maven-antrun-plugin
+BuildRequires:	%{?scl_prefix_maven}maven-dependency-plugin
+BuildRequires:	%{?scl_prefix_maven}maven-plugin-build-helper
+BuildRequires:	%{?scl_prefix_java_common}maven-hawtjni-plugin
+BuildRequires:	%{?scl_prefix_java_common}javassist
+BuildRequires:	%{?scl_prefix}jctools
+BuildRequires:	%{?scl_prefix_java_common}slf4j%{?scl:-api}
+BuildRequires:	%{?scl_prefix_maven}sonatype-oss-parent
 %if %{without jp_minimal}
-BuildRequires:  mvn(com.google.protobuf:protobuf-java)
-BuildRequires:  mvn(org.bouncycastle:bcpkix-jdk15on)
-BuildRequires:  mvn(org.jboss.marshalling:jboss-marshalling)
+BuildRequires:	mvn(com.google.protobuf:protobuf-java)
+BuildRequires:	mvn(org.bouncycastle:bcpkix-jdk15on)
+BuildRequires:	mvn(org.jboss.marshalling:jboss-marshalling)
 %endif
+# transitive need to be added for scl
+BuildRequires:	%{?scl_prefix}disruptor
+BuildRequires:	%{?scl_prefix}jctools
+BuildRequires:	%{?scl_prefix}jackson-core
+BuildRequires:	%{?scl_prefix}jackson-databind
+BuildRequires:	%{?scl_prefix}jackson-dataformat-yaml
+BuildRequires:	%{?scl_prefix}jackson-dataformat-xml
+BuildRequires:	%{?scl_prefix}jackson-annotations
+BuildRequires:	%{?scl_prefix}jackson-module-jaxb-annotations
+BuildRequires:	%{?scl_prefix_java_common}jansi
+BuildRequires:	%{?scl_prefix}jeromq
+BuildRequires:	%{?scl_prefix}apache-commons-csv
+%{!?scl:
+BuildRequires:	mvn(kr.motd.maven:os-maven-plugin)
+}
+%{?scl:Requires: %scl_runtime}
 
 %description
 Netty is a NIO client server framework which enables quick and easy
@@ -52,17 +72,18 @@ a way to achieve ease of development, performance, stability, and
 flexibility without a compromise.
 
 %package javadoc
-Summary:   API documentation for %{name}
+Summary:	API documentation for %{name}
 
 %description javadoc
 %{summary}.
 
 %prep
-%setup -q -n netty-netty-%{namedversion}
+%setup -q -n %{pkg_name}-%{pkg_name}-%{namedversion}
 
 %patch0 -p1
 %patch1 -p1
 
+%{?scl:scl enable %{scl_maven} %{scl} - << "EOF"}
 # Missing Mavenized rxtx
 %pom_disable_module "transport-rxtx"
 %pom_remove_dep ":netty-transport-rxtx" all
@@ -110,25 +131,44 @@ sed -i '/BouncyCastleSelfSignedCertGenerator/s/.*/throw new UnsupportedOperation
     handler/src/main/java/io/netty/handler/ssl/util/SelfSignedCertificate.java
 %endif
 
+# we want to build only netty-transport-native-epoll module in scl package
+%{?scl:
+%pom_xpath_remove "pom:build/pom:extensions"
+%pom_disable_module "codec-haproxy"
+%pom_disable_module "codec-http"
+%pom_disable_module "codec-socks"
+%pom_disable_module "transport-sctp"
+%pom_disable_module "all"
+}
+
 sed -i 's|taskdef|taskdef classpathref="maven.plugin.classpath"|' all/pom.xml
+
+# workaround for the hawtjni issue
+mkdir -p transport-native-epoll/src/main/native-package
+touch transport-native-epoll/src/main/native-package/netty-transport-native-epoll.h
 
 %pom_xpath_inject "pom:plugins/pom:plugin[pom:artifactId = 'maven-antrun-plugin']" '<dependencies><dependency><groupId>ant-contrib</groupId><artifactId>ant-contrib</artifactId><version>1.0b3</version></dependency></dependencies>' all/pom.xml
 %pom_xpath_inject "pom:execution[pom:id = 'build-native-lib']/pom:configuration" '<verbose>true</verbose>' transport-native-epoll/pom.xml
 
 # Upstream has jctools bundled.
-%pom_xpath_set "pom:build/pom:plugins/pom:plugin[pom:artifactId = 'maven-bundle-plugin']/pom:executions/pom:execution[pom:id = 'generate-manifest']/pom:configuration/pom:instructions/pom:Import-Package" 'org.jctools.*,sun.misc;resolution:=optional;*' common/pom.xml
+%pom_xpath_remove "pom:build/pom:plugins/pom:plugin[pom:artifactId = 'maven-bundle-plugin']/pom:executions/pom:execution[pom:id = 'generate-manifest']/pom:configuration/pom:instructions/pom:Import-Package" common/pom.xml
 
 # Tell xmvn to install attached artifact, which it does not
 # do by default. In this case install all attached artifacts with
 # the linux classifier.
 %mvn_package ":::linux*:"
+%{?scl:EOF}
 
 %build
+%{?scl:scl enable %{scl_maven} %{scl} - << "EOF"}
 export CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="$RPM_LD_FLAGS"
 %mvn_build -f
+%{?scl:EOF}
 
 %install
+%{?scl:scl enable %{scl_maven} %{scl} - << "EOF"}
 %mvn_install
+%{?scl:EOF}
 
 %files -f .mfiles
 %doc LICENSE.txt NOTICE.txt
@@ -137,6 +177,10 @@ export CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="$RPM_LD_FLAGS"
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Wed Mar 29 2017 Tomas Repik <trepik@redhat.com> - 4.0.42-5
+- Keep Import-Package default value
+- scl conversion
+
 * Thu Mar 16 2017 Michael Simacek <msimacek@redhat.com> - 4.0.42-4
 - Remove maven-javadoc-plugin from POM
 
