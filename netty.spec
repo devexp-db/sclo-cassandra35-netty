@@ -52,6 +52,7 @@ BuildRequires:	%{?scl_prefix}jackson-module-jaxb-annotations
 BuildRequires:	%{?scl_prefix_java_common}jansi
 BuildRequires:	%{?scl_prefix}jeromq
 BuildRequires:	%{?scl_prefix}apache-commons-csv
+BuildRequires:	%{?scl_prefix}snakeyaml
 %{!?scl:
 BuildRequires:	mvn(kr.motd.maven:os-maven-plugin)
 }
