@@ -9,14 +9,19 @@
 %bcond_without	jp_minimal
 
 Name:		%{?scl_prefix}netty
-Version:	4.0.42
-Release:	5%{?dist}
+Version:	4.1.13
+Release:	1%{?dist}
 Summary:	An asynchronous event-driven network application framework and tools for Java
 License:	ASL 2.0
 URL:		https://netty.io/
 Source0:	https://github.com/%{pkg_name}/%{pkg_name}/archive/%{pkg_name}-%{namedversion}.tar.gz
+# Upsteam uses a simple template generator script written in groovy and run with gmaven
+# We don't have the plugin and want to avoid groovy dependency
+# This script is written in bash+sed and performs the same task
+Source1:	codegen.bash
 Patch0:		0001-Remove-OpenSSL-parts-depending-on-tcnative.patch
-Patch1:		0002-Remove-NPN-ALPN.patch
+Patch1:		0002-Remove-NPN.patch
+Patch2:		0003-Remove-conscrypt-ALPN.patch
 
 Buildrequires:	autoconf
 Buildrequires:	automake
@@ -29,14 +34,22 @@ BuildRequires:	%{?scl_prefix_maven}maven-plugin-bundle
 BuildRequires:	%{?scl_prefix}log4j
 BuildRequires:	%{?scl_prefix_maven}maven-antrun-plugin
 BuildRequires:	%{?scl_prefix_maven}maven-dependency-plugin
+BuildRequires:  %{?scl_prefix_maven}maven-remote-resources-plugin
 BuildRequires:	%{?scl_prefix_maven}maven-plugin-build-helper
+BuildRequires:  %{?scl_prefix_maven}exec-maven-plugin
+BuildRequires:	%{?scl_prefix}jetty-alpn-api
 BuildRequires:	%{?scl_prefix_java_common}maven-hawtjni-plugin
 BuildRequires:	%{?scl_prefix_java_common}javassist
 BuildRequires:	%{?scl_prefix}jctools
 BuildRequires:	%{?scl_prefix_java_common}slf4j%{?scl:-api}
 BuildRequires:	%{?scl_prefix_maven}sonatype-oss-parent
 %if %{without jp_minimal}
+BuildRequires:	mvn(com.fasterxml:aalto-xml)
+BuildRequires:	mvn(com.github.jponge:lzma-java)
+BuildRequires:	mvn(com.google.protobuf.nano:protobuf-javanano)
 BuildRequires:	mvn(com.google.protobuf:protobuf-java)
+BuildRequires:	mvn(com.ning:compress-lzf)
+BuildRequires:	mvn(net.jpountz.lz4:lz4)
 BuildRequires:	mvn(org.bouncycastle:bcpkix-jdk15on)
 BuildRequires:	mvn(org.jboss.marshalling:jboss-marshalling)
 %endif
@@ -56,6 +69,7 @@ BuildRequires:	%{?scl_prefix}snakeyaml
 %{!?scl:
 BuildRequires:	mvn(kr.motd.maven:os-maven-plugin)
 }
+BuildRequires:	%{?scl_prefix_java_common}PyXB	
 %{?scl:Requires: %scl_runtime}
 
 %description
@@ -83,6 +97,7 @@ Summary:	API documentation for %{name}
 
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 %{?scl:scl enable %{scl_maven} %{scl} - << "EOF"}
 # Missing Mavenized rxtx
@@ -96,48 +111,85 @@ Summary:	API documentation for %{name}
 %pom_disable_module "example"
 %pom_remove_dep ":netty-example" all
 %pom_disable_module "testsuite"
+%pom_disable_module "testsuite-autobahn"
 %pom_disable_module "testsuite-osgi"
 %pom_disable_module "tarball"
 %pom_disable_module "microbench"
-%pom_remove_plugin :maven-checkstyle-plugin
-%pom_remove_plugin :animal-sniffer-maven-plugin
-%pom_remove_plugin :maven-enforcer-plugin
+
+%pom_xpath_inject 'pom:plugin[pom:artifactId="maven-remote-resources-plugin"]' '
+<dependencies>
+<dependency>
+<groupId>io.netty</groupId>
+<artifactId>netty-dev-tools</artifactId>
+<version>${project.version}</version>
+</dependency>
+</dependencies>'
+
 %pom_remove_plugin :maven-antrun-plugin
+# get-jetty-alpn-agent
 %pom_remove_plugin :maven-dependency-plugin
-%pom_remove_plugin :maven-shade-plugin
-%pom_remove_plugin :maven-shade-plugin common
+# style checker
 %pom_remove_plugin :xml-maven-plugin
+%pom_remove_plugin -r :maven-checkstyle-plugin
+%pom_remove_plugin -r :animal-sniffer-maven-plugin
+%pom_remove_plugin -r :maven-enforcer-plugin
+%pom_remove_plugin -r :maven-shade-plugin
 %pom_remove_plugin -r :maven-release-plugin
 %pom_remove_plugin -r :maven-clean-plugin
 %pom_remove_plugin -r :maven-source-plugin
 %pom_remove_plugin -r :maven-deploy-plugin
 %pom_remove_plugin -r :maven-jxr-plugin
 %pom_remove_plugin -r :maven-javadoc-plugin
-# Optional things we don't ship
-%pom_remove_dep ":\${tcnative.artifactId}"
-%pom_remove_dep ":\${tcnative.artifactId}" handler
-%pom_remove_dep "org.eclipse.jetty.npn:npn-api"
-%pom_remove_dep "org.eclipse.jetty.npn:npn-api" handler
-%pom_remove_dep "org.eclipse.jetty.alpn:alpn-api"
-%pom_remove_dep "org.eclipse.jetty.alpn:alpn-api" handler
+%pom_remove_plugin -r :forbiddenapis
+
+cp %{SOURCE1} common/codegen.bash
+%pom_add_plugin org.codehaus.mojo:exec-maven-plugin common '
+<executions>
+    <execution>
+        <id>generate-collections</id>
+        <phase>generate-sources</phase>
+        <goals>
+            <goal>exec</goal>
+        </goals>
+        <configuration>
+            <executable>common/codegen.bash</executable>
+        </configuration>
+    </execution>
+</executions>
+'
+%pom_remove_plugin :groovy-maven-plugin common
 
 %if %{with jp_minimal}
 %pom_remove_dep -r "com.google.protobuf:protobuf-java"
+%pom_remove_dep -r "com.google.protobuf.nano:protobuf-javanano"
 rm codec/src/main/java/io/netty/handler/codec/protobuf/*
+sed -i '/import.*protobuf/d' codec/src/main/java/io/netty/handler/codec/DatagramPacket*.java
 %pom_remove_dep -r "org.jboss.marshalling:jboss-marshalling"
 rm codec/src/main/java/io/netty/handler/codec/marshalling/*
 %pom_remove_dep -r org.bouncycastle
 rm handler/src/main/java/io/netty/handler/ssl/util/BouncyCastleSelfSignedCertGenerator.java
 sed -i '/BouncyCastleSelfSignedCertGenerator/s/.*/throw new UnsupportedOperationException();/' \
     handler/src/main/java/io/netty/handler/ssl/util/SelfSignedCertificate.java
-%endif
+%pom_remove_dep -r com.fasterxml:aalto-xml
+%pom_disable_module codec-xml
+%pom_remove_dep :netty-codec-xml all
+%pom_remove_dep -r com.github.jponge:lzma-java
+rm codec/src/*/java/io/netty/handler/codec/compression/Lzma*.java
+%pom_remove_dep -r com.ning:compress-lzf
+rm codec/src/*/java/io/netty/handler/codec/compression/Lzf*.java
+%pom_remove_dep -r net.jpountz.lz4:lz4
+rm codec/src/*/java/io/netty/handler/codec/compression/Lz4*.java
+
+%endif # jp_minimal
 
 # we want to build only netty-transport-native-epoll module in scl package
 %{?scl:
 %pom_xpath_remove "pom:build/pom:extensions"
 %pom_disable_module "codec-haproxy"
 %pom_disable_module "codec-http"
+%pom_disable_module "codec-http2"
 %pom_disable_module "codec-socks"
+%pom_disable_module "handler-proxy"
 %pom_disable_module "transport-sctp"
 %pom_disable_module "all"
 }
@@ -178,6 +230,9 @@ export CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="$RPM_LD_FLAGS"
 %doc LICENSE.txt NOTICE.txt
 
 %changelog
+* Mon Nov 06 2017 Auusto Mecking Caringi <acaringi@redhat.com> - 4.1.13-1
+- Update to upstream version 4.1.13
+
 * Wed Mar 29 2017 Tomas Repik <trepik@redhat.com> - 4.0.42-5
 - Keep Import-Package default value
 - scl conversion
